@@ -1,0 +1,99 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    USER
+    ADMIN
+}
+
+model User {
+    id           Int          @id @default(autoincrement())
+    email        String
+    password     String
+    firstName    String
+    lastName     String
+    avatar       String
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
+    role         Role         @default(USER)
+    userStatuses UserStatus[]
+    santas       Pairing[]    @relation(name: "Santa")
+    persons      Pairing[]    @relation(name: "Person")
+    wishlists    Wishlist[]
+    thankYous    ThankYou[]
+    toUsers      ThankYou[]   @relation(name: "ToUser")
+}
+
+enum Status {
+    INVITED
+    DECLINED
+    ACCEPTED
+}
+
+model UserStatus {
+    id      Int    @id @default(autoincrement())
+    eventId Int    @unique
+    event   Event  @relation(fields: [eventId], references: [id])
+    userId  Int    @unique
+    user    User   @relation(fields: [userId], references: [id])
+    status  Status @default(INVITED)
+}
+
+model Event {
+    id           Int          @id @default(autoincrement())
+    name         String
+    date         DateTime
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
+    sendReminder Boolean
+    userStatuses UserStatus[]
+    pairings     Pairing[]
+    wishlists    Wishlist[]
+    thankYous    ThankYou[]
+}
+
+model Pairing {
+    id        Int      @id @default(autoincrement())
+    eventId   Int      @unique
+    event     Event    @relation(fields: [eventId], references: [id])
+    santaId   Int      @unique
+    santa     User     @relation(name: "Santa", fields: [santaId], references: [id])
+    personId  Int      @unique
+    person    User     @relation(name: "Person", fields: [personId], references: [id])
+    createdAt DateTime
+    updatedAt DateTime @updatedAt
+}
+
+model Wishlist {
+    id              Int      @id @default(autoincrement())
+    name            String
+    url             String
+    userId          Int      @unique
+    user            User     @relation(fields: [userId], references: [id])
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    order           Int
+    eventId         Int      @unique
+    event           Event    @relation(fields: [eventId], references: [id])
+    siteImage       String
+    siteTitle       String
+    siteDescription String
+}
+
+model ThankYou {
+    id        Int      @id @default(autoincrement())
+    eventId   Int      @unique
+    event     Event    @relation(fields: [eventId], references: [id])
+    userId    Int      @unique
+    user      User     @relation(fields: [userId], references: [id])
+    toUserId  Int
+    toUser    User     @relation(name: "ToUser", fields: [toUserId], references: [id])
+    message   String
+    createdAt DateTime @default(now())
+}
