@@ -13,12 +13,12 @@ enum Role {
 }
 
 model User {
-    id           Int          @id @default(autoincrement())
+    id           String       @id @unique
     email        String
     password     String
     firstName    String
     lastName     String
-    avatar       String
+    avatar       String?
     createdAt    DateTime     @default(now())
     updatedAt    DateTime     @updatedAt
     role         Role         @default(USER)
@@ -28,6 +28,8 @@ model User {
     wishlists    Wishlist[]
     thankYous    ThankYou[]
     toUsers      ThankYou[]   @relation(name: "ToUser")
+    auth_session Session[]
+    key          Key[]
 }
 
 enum Status {
@@ -40,7 +42,7 @@ model UserStatus {
     id      Int    @id @default(autoincrement())
     eventId Int    @unique
     event   Event  @relation(fields: [eventId], references: [id])
-    userId  Int    @unique
+    userId  String @unique
     user    User   @relation(fields: [userId], references: [id])
     status  Status @default(INVITED)
 }
@@ -62,9 +64,9 @@ model Pairing {
     id        Int      @id @default(autoincrement())
     eventId   Int      @unique
     event     Event    @relation(fields: [eventId], references: [id])
-    santaId   Int      @unique
+    santaId   String   @unique
     santa     User     @relation(name: "Santa", fields: [santaId], references: [id])
-    personId  Int      @unique
+    personId  String   @unique
     person    User     @relation(name: "Person", fields: [personId], references: [id])
     createdAt DateTime
     updatedAt DateTime @updatedAt
@@ -74,7 +76,7 @@ model Wishlist {
     id              Int      @id @default(autoincrement())
     name            String
     url             String
-    userId          Int      @unique
+    userId          String   @unique
     user            User     @relation(fields: [userId], references: [id])
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
@@ -90,10 +92,29 @@ model ThankYou {
     id        Int      @id @default(autoincrement())
     eventId   Int      @unique
     event     Event    @relation(fields: [eventId], references: [id])
-    userId    Int      @unique
+    userId    String   @unique
     user      User     @relation(fields: [userId], references: [id])
-    toUserId  Int
+    toUserId  String
     toUser    User     @relation(name: "ToUser", fields: [toUserId], references: [id])
     message   String
     createdAt DateTime @default(now())
+}
+
+model Session {
+    id             String @id @unique
+    user_id        String
+    active_expires BigInt
+    idle_expires   BigInt
+    user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+    @@index([user_id])
+}
+
+model Key {
+    id              String  @id @unique
+    hashed_password String?
+    user_id         String
+    user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
+
+    @@index([user_id])
 }

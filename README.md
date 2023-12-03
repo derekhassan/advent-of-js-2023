@@ -13,6 +13,18 @@ npm run dev
 npm run dev -- --open
 ```
 
+## Using Docker for MySQL Database
+
+Run the following command to spin up a local MySQL database with Docker running on port 3306:
+```
+docker run --name advent_of_js -p 3306:3306  \
+    -e MYSQL_ROOT_PASSWORD=<your-password> \
+    -e MYSQL_DATABASE=secret_santa \
+    -e MYSQL_USER=<your-username> \
+    -e MYSQL_PASSWORD=<your-password> \
+    -d mysql:latest
+```
+
 ## Building
 
 To create a production version of your app:
